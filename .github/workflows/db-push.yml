@@ -19,6 +19,6 @@ jobs:
         run: npm ci
       - name: Prisma DB Push
         env:
-          DATABASE_URL: "postgresql://neondb_owner:npg_0tpwrTs4XeWN@ep-restless-bird-aph57d64-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&pgbouncer=true&connect_timeout=15"
-          DIRECT_URL: "postgresql://neondb_owner:npg_0tpwrTs4XeWN@ep-restless-bird-aph57d64-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&pgbouncer=true&connect_timeout=15"
+          DATABASE_URL: "postgresql://neondb_owner:npg_0tpwrTs4XeWN@ep-restless-bird-aph57d64.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=30"
+          DIRECT_URL: "postgresql://neondb_owner:npg_0tpwrTs4XeWN@ep-restless-bird-aph57d64.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=30"
         run: npx prisma db push --accept-data-loss
