@@ -61,16 +61,19 @@ export async function addReservation(formData: FormData) {
   const clientId = formData.get("clientId") as string;
   const checkIn = new Date(formData.get("checkIn") as string);
   const checkOut = new Date(formData.get("checkOut") as string);
-  const totalPrice = Number(formData.get("totalPrice"));
+  const totalCost = Number(formData.get("totalPrice"));
   const notes = formData.get("notes") as string;
 
-  if (!chaletId || !clientId || isNaN(checkIn.getTime()) || isNaN(checkOut.getTime()) || !totalPrice) {
+  if (!chaletId || !clientId || isNaN(checkIn.getTime()) || isNaN(checkOut.getTime()) || !totalCost) {
     return { error: "جميع الحقول الأساسية مطلوبة" };
   }
 
   if (checkIn >= checkOut) {
     return { error: "تاريخ الخروج يجب أن يكون بعد تاريخ الدخول" };
   }
+
+  const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+  const pricePerNight = totalCost / nights;
 
   try {
     // Conflict Checking Logic
@@ -99,7 +102,9 @@ export async function addReservation(formData: FormData) {
         clientId,
         checkIn,
         checkOut,
-        totalPrice,
+        nights,
+        pricePerNight,
+        totalCost,
         status: "معلق",
         notes: notes || null
       }
