@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Shield, X } from "lucide-react";
 import { updateUser } from "@/app/actions";
+import { validateName } from "@/lib/validation";
 
 type User = {
   id: string;
@@ -15,9 +16,36 @@ export default function EditUserForm({ user }: { user: User }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  // Form State
+  const [name, setName] = useState(user.name);
+  const [role, setRole] = useState(user.role);
+
+  // Errors State
+  const [nameError, setNameError] = useState("");
+
+  function validateForm(): boolean {
+    let valid = true;
+    const nameCheck = validateName(name, "الاسم الكامل");
+    if (!nameCheck.valid) {
+      setNameError(nameCheck.message!);
+      valid = false;
+    } else {
+      setNameError("");
+    }
+    return valid;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
     setPending(true);
     setError(null);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("role", role);
+
     const res = await updateUser(user.id, formData);
     setPending(false);
     if (res.error) {
@@ -39,7 +67,7 @@ export default function EditUserForm({ user }: { user: User }) {
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel p-6 w-full max-w-md relative">
+          <div className="glass-panel p-6 w-full max-w-md relative animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => { setIsOpen(false); setError(null); }}
               className="absolute top-4 left-4 text-[#8b92a5] hover:text-white"
@@ -50,16 +78,24 @@ export default function EditUserForm({ user }: { user: User }) {
 
             {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
 
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">الاسم الكامل</label>
+                <label className="block text-sm text-[#8b92a5] mb-1">الاسم الكامل <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  name="name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (nameError) setNameError("");
+                  }}
+                  onBlur={() => {
+                    const check = validateName(name, "الاسم الكامل");
+                    if (!check.valid) setNameError(check.message!);
+                  }}
                   required
-                  defaultValue={user.name}
-                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                  className={`w-full bg-[var(--color-bg-input)] border ${nameError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`}
                 />
+                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
 
               <div>
@@ -67,8 +103,8 @@ export default function EditUserForm({ user }: { user: User }) {
                   <Shield size={14} /> الصلاحية (الدور)
                 </label>
                 <select
-                  name="role"
-                  defaultValue={user.role}
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
                   className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
                 >
                   <option value="admin">مدير النظام</option>

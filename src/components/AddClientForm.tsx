@@ -3,20 +3,75 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { addClient } from "@/app/actions";
+import { validateName, validateSaudiPhone, validateSaudiNationalId, formatPhoneInput, formatNationalIdInput } from "@/lib/validation";
 
 export default function AddClientForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  // Form State
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [notes, setNotes] = useState("");
+
+  // Errors State
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [nationalIdError, setNationalIdError] = useState("");
+
+  function validateForm(): boolean {
+    let valid = true;
+
+    const nameCheck = validateName(name, "اسم العميل");
+    if (!nameCheck.valid) {
+      setNameError(nameCheck.message!);
+      valid = false;
+    } else {
+      setNameError("");
+    }
+
+    const phoneCheck = validateSaudiPhone(phone);
+    if (!phoneCheck.valid) {
+      setPhoneError(phoneCheck.message!);
+      valid = false;
+    } else {
+      setPhoneError("");
+    }
+
+    const idCheck = validateSaudiNationalId(nationalId);
+    if (!idCheck.valid) {
+      setNationalIdError(idCheck.message!);
+      valid = false;
+    } else {
+      setNationalIdError("");
+    }
+
+    return valid;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
     setPending(true);
     setError(null);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("phone", phone);
+    formData.append("nationalId", nationalId);
+    formData.append("notes", notes);
+
     const res = await addClient(formData);
     setPending(false);
+    
     if (res.error) {
       setError(res.error);
     } else {
+      // Reset and close
+      setName(""); setPhone(""); setNationalId(""); setNotes("");
       setIsOpen(false);
     }
   }
@@ -43,26 +98,82 @@ export default function AddClientForm() {
             
             {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
 
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">اسم العميل الثلاثي</label>
-                <input type="text" name="name" required className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]" placeholder="محمد عبدالله..." />
+                <label className="block text-sm text-[#8b92a5] mb-1">اسم العميل الثلاثي <span className="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (nameError) setNameError("");
+                  }}
+                  onBlur={() => {
+                    const check = validateName(name, "اسم العميل");
+                    if (!check.valid) setNameError(check.message!);
+                  }}
+                  required 
+                  className={`w-full bg-[var(--color-bg-input)] border ${nameError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`} 
+                  placeholder="محمد عبدالله..." 
+                />
+                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-[#8b92a5] mb-1">رقم الجوال</label>
-                  <input type="tel" name="phone" required className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]" placeholder="05XXXXXXXX" dir="ltr" />
+                  <label className="block text-sm text-[#8b92a5] mb-1">رقم الجوال <span className="text-red-500">*</span></label>
+                  <input 
+                    type="tel" 
+                    value={phone}
+                    onChange={(e) => {
+                      const val = formatPhoneInput(e.target.value);
+                      setPhone(val);
+                      if (phoneError) setPhoneError("");
+                    }}
+                    onBlur={() => {
+                      const check = validateSaudiPhone(phone);
+                      if (!check.valid) setPhoneError(check.message!);
+                    }}
+                    required 
+                    className={`w-full bg-[var(--color-bg-input)] border ${phoneError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`} 
+                    placeholder="05XXXXXXXX" 
+                    dir="ltr" 
+                    maxLength={10}
+                  />
+                  {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm text-[#8b92a5] mb-1">رقم الهوية (اختياري)</label>
-                  <input type="text" name="nationalId" className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]" placeholder="10XXXXX" />
+                  <input 
+                    type="text" 
+                    value={nationalId}
+                    onChange={(e) => {
+                      const val = formatNationalIdInput(e.target.value);
+                      setNationalId(val);
+                      if (nationalIdError) setNationalIdError("");
+                    }}
+                    onBlur={() => {
+                      const check = validateSaudiNationalId(nationalId);
+                      if (!check.valid) setNationalIdError(check.message!);
+                    }}
+                    className={`w-full bg-[var(--color-bg-input)] border ${nationalIdError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`} 
+                    placeholder="10XXXXX" 
+                    dir="ltr"
+                    maxLength={10}
+                  />
+                  {nationalIdError && <p className="text-red-400 text-xs mt-1">{nationalIdError}</p>}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm text-[#8b92a5] mb-1">ملاحظات عن العميل</label>
-                <textarea name="notes" rows={3} className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]" placeholder="عميل VIP..."></textarea>
+                <textarea 
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3} 
+                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]" 
+                  placeholder="عميل VIP..."
+                ></textarea>
               </div>
 
               <div className="pt-4 flex gap-3">

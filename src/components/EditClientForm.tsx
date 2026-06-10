@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Edit, X } from "lucide-react";
 import { updateClient } from "@/app/actions";
+import { validateName, validateSaudiPhone, validateSaudiNationalId, formatPhoneInput, formatNationalIdInput } from "@/lib/validation";
 
 type Client = {
   id: string;
@@ -17,11 +18,63 @@ export default function EditClientForm({ client }: { client: Client }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  // Form State
+  const [name, setName] = useState(client.name);
+  const [phone, setPhone] = useState(client.phone);
+  const [nationalId, setNationalId] = useState(client.nationalId || "");
+  const [notes, setNotes] = useState(client.notes || "");
+
+  // Errors State
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [nationalIdError, setNationalIdError] = useState("");
+
+  function validateForm(): boolean {
+    let valid = true;
+
+    const nameCheck = validateName(name, "اسم العميل");
+    if (!nameCheck.valid) {
+      setNameError(nameCheck.message!);
+      valid = false;
+    } else {
+      setNameError("");
+    }
+
+    const phoneCheck = validateSaudiPhone(phone);
+    if (!phoneCheck.valid) {
+      setPhoneError(phoneCheck.message!);
+      valid = false;
+    } else {
+      setPhoneError("");
+    }
+
+    const idCheck = validateSaudiNationalId(nationalId);
+    if (!idCheck.valid) {
+      setNationalIdError(idCheck.message!);
+      valid = false;
+    } else {
+      setNationalIdError("");
+    }
+
+    return valid;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
     setPending(true);
     setError(null);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("phone", phone);
+    formData.append("nationalId", nationalId);
+    formData.append("notes", notes);
+
     const res = await updateClient(client.id, formData);
     setPending(false);
+    
     if (res.error) {
       setError(res.error);
     } else {
@@ -41,7 +94,7 @@ export default function EditClientForm({ client }: { client: Client }) {
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel p-6 w-full max-w-lg relative">
+          <div className="glass-panel p-6 w-full max-w-lg relative animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => setIsOpen(false)}
               className="absolute top-4 left-4 text-[#8b92a5] hover:text-white"
@@ -52,47 +105,76 @@ export default function EditClientForm({ client }: { client: Client }) {
 
             {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
 
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">اسم العميل الثلاثي</label>
+                <label className="block text-sm text-[#8b92a5] mb-1">اسم العميل الثلاثي <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  name="name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (nameError) setNameError("");
+                  }}
+                  onBlur={() => {
+                    const check = validateName(name, "اسم العميل");
+                    if (!check.valid) setNameError(check.message!);
+                  }}
                   required
-                  defaultValue={client.name}
-                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                  className={`w-full bg-[var(--color-bg-input)] border ${nameError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`}
                 />
+                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-[#8b92a5] mb-1">رقم الجوال</label>
+                  <label className="block text-sm text-[#8b92a5] mb-1">رقم الجوال <span className="text-red-500">*</span></label>
                   <input
                     type="tel"
-                    name="phone"
+                    value={phone}
+                    onChange={(e) => {
+                      const val = formatPhoneInput(e.target.value);
+                      setPhone(val);
+                      if (phoneError) setPhoneError("");
+                    }}
+                    onBlur={() => {
+                      const check = validateSaudiPhone(phone);
+                      if (!check.valid) setPhoneError(check.message!);
+                    }}
                     required
-                    defaultValue={client.phone}
-                    className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                    className={`w-full bg-[var(--color-bg-input)] border ${phoneError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`}
                     dir="ltr"
+                    maxLength={10}
                   />
+                  {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm text-[#8b92a5] mb-1">رقم الهوية (اختياري)</label>
                   <input
                     type="text"
-                    name="nationalId"
-                    defaultValue={client.nationalId || ""}
-                    className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                    value={nationalId}
+                    onChange={(e) => {
+                      const val = formatNationalIdInput(e.target.value);
+                      setNationalId(val);
+                      if (nationalIdError) setNationalIdError("");
+                    }}
+                    onBlur={() => {
+                      const check = validateSaudiNationalId(nationalId);
+                      if (!check.valid) setNationalIdError(check.message!);
+                    }}
+                    className={`w-full bg-[var(--color-bg-input)] border ${nationalIdError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`}
+                    dir="ltr"
+                    maxLength={10}
                   />
+                  {nationalIdError && <p className="text-red-400 text-xs mt-1">{nationalIdError}</p>}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm text-[#8b92a5] mb-1">ملاحظات عن العميل</label>
                 <textarea
-                  name="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
                   rows={3}
-                  defaultValue={client.notes || ""}
                   className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
                 />
               </div>

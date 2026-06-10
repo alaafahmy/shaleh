@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Edit, X } from "lucide-react";
 import { updateChalet } from "@/app/actions";
+import { validateName, validateAmount } from "@/lib/validation";
 
 type Chalet = {
   id: string;
@@ -18,9 +19,54 @@ export default function EditChaletForm({ chalet }: { chalet: Chalet }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  // Form State
+  const [name, setName] = useState(chalet.name);
+  const [type, setType] = useState(chalet.type);
+  const [status, setStatus] = useState(chalet.status);
+  const [pricePerNight, setPricePerNight] = useState(chalet.pricePerNight.toString());
+  const [description, setDescription] = useState(chalet.description || "");
+
+  // Errors State
+  const [nameError, setNameError] = useState("");
+  const [priceError, setPriceError] = useState("");
+
+  function validateForm(): boolean {
+    let valid = true;
+
+    const nameCheck = validateName(name, "اسم الشاليه");
+    if (!nameCheck.valid) {
+      setNameError(nameCheck.message!);
+      valid = false;
+    } else {
+      setNameError("");
+    }
+
+    const priceNum = Number(pricePerNight);
+    const priceCheck = validateAmount(priceNum, "سعر الليلة");
+    if (!priceCheck.valid) {
+      setPriceError(priceCheck.message!);
+      valid = false;
+    } else {
+      setPriceError("");
+    }
+
+    return valid;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
     setPending(true);
     setError(null);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("type", type);
+    formData.append("status", status);
+    formData.append("pricePerNight", pricePerNight);
+    formData.append("description", description);
+
     const res = await updateChalet(chalet.id, formData);
     setPending(false);
     if (res.error) {
@@ -42,7 +88,7 @@ export default function EditChaletForm({ chalet }: { chalet: Chalet }) {
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel p-6 w-full max-w-lg relative">
+          <div className="glass-panel p-6 w-full max-w-lg relative animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => setIsOpen(false)}
               className="absolute top-4 left-4 text-[#8b92a5] hover:text-white"
@@ -53,24 +99,32 @@ export default function EditChaletForm({ chalet }: { chalet: Chalet }) {
 
             {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
 
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">اسم الشاليه</label>
+                <label className="block text-sm text-[#8b92a5] mb-1">اسم الشاليه <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  name="name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (nameError) setNameError("");
+                  }}
+                  onBlur={() => {
+                    const check = validateName(name, "اسم الشاليه");
+                    if (!check.valid) setNameError(check.message!);
+                  }}
                   required
-                  defaultValue={chalet.name}
-                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                  className={`w-full bg-[var(--color-bg-input)] border ${nameError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`}
                 />
+                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-[#8b92a5] mb-1">نوع الشاليه</label>
                   <select
-                    name="type"
-                    defaultValue={chalet.type}
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
                     className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
                   >
                     <option value="صغير (VVIP)">صغير (VVIP)</option>
@@ -81,8 +135,8 @@ export default function EditChaletForm({ chalet }: { chalet: Chalet }) {
                 <div>
                   <label className="block text-sm text-[#8b92a5] mb-1">الحالة</label>
                   <select
-                    name="status"
-                    defaultValue={chalet.status}
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
                     className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
                   >
                     <option value="متاح">متاح</option>
@@ -93,22 +147,31 @@ export default function EditChaletForm({ chalet }: { chalet: Chalet }) {
               </div>
 
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">سعر الليلة الأساسي (ر.س)</label>
+                <label className="block text-sm text-[#8b92a5] mb-1">سعر الليلة الأساسي (ر.س) <span className="text-red-500">*</span></label>
                 <input
                   type="number"
-                  name="pricePerNight"
+                  value={pricePerNight}
+                  onChange={(e) => {
+                    setPricePerNight(e.target.value);
+                    if (priceError) setPriceError("");
+                  }}
+                  onBlur={() => {
+                    const check = validateAmount(Number(pricePerNight), "سعر الليلة");
+                    if (!check.valid) setPriceError(check.message!);
+                  }}
                   required
-                  defaultValue={chalet.pricePerNight}
-                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                  min="1"
+                  className={`w-full bg-[var(--color-bg-input)] border ${priceError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`}
                 />
+                {priceError && <p className="text-red-400 text-xs mt-1">{priceError}</p>}
               </div>
 
               <div>
                 <label className="block text-sm text-[#8b92a5] mb-1">وصف المرفق</label>
                 <textarea
-                  name="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  defaultValue={chalet.description || ""}
                   className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
                 />
               </div>
