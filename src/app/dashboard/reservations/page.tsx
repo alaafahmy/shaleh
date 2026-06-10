@@ -36,6 +36,14 @@ export default async function ReservationsPage() {
   const formatCur = (num: number) => new Intl.NumberFormat('ar-SA').format(num) + ' ر.س';
   const formatDate = (date: Date) => date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric' });
 
+  // إحصاءات سريعة
+  const totalUnpaid = reservations
+    .filter(r => r.status === 'مؤكد' || r.status === 'معلق')
+    .reduce((sum, r) => {
+      const paid = r.payments.reduce((s, p) => s + p.amount, 0);
+      return sum + Math.max(0, r.totalCost - paid);
+    }, 0);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -44,6 +52,14 @@ export default async function ReservationsPage() {
         </h2>
         <AddReservationForm clients={clients} chalets={chalets} />
       </div>
+
+      {/* إحصاء سريع للديون */}
+      {totalUnpaid > 0 && (
+        <div className="glass-panel p-4 border-orange-500/20 bg-orange-500/5 flex justify-between items-center">
+          <div className="text-[#8b92a5] text-sm">💳 إجمالي المبالغ المتبقية (غير المحصّلة)</div>
+          <div className="text-xl font-bold text-orange-400">{formatCur(totalUnpaid)}</div>
+        </div>
+      )}
 
       <div className="glass-panel overflow-hidden">
         <div className="overflow-x-auto">
@@ -55,8 +71,9 @@ export default async function ReservationsPage() {
                 <th className="px-6 py-4 font-bold">الشاليه</th>
                 <th className="px-6 py-4 font-bold">تاريخ الدخول</th>
                 <th className="px-6 py-4 font-bold">تاريخ الخروج</th>
-                <th className="px-6 py-4 font-bold">التكلفة الإجمالية</th>
-                <th className="px-6 py-4 font-bold">المدفوع</th>
+                <th className="px-6 py-4 font-bold">الليالي</th>
+                <th className="px-6 py-4 font-bold">الإجمالي</th>
+                <th className="px-6 py-4 font-bold">المدفوع / المتبقي</th>
                 <th className="px-6 py-4 font-bold">الحالة</th>
                 <th className="px-6 py-4 font-bold">إجراءات</th>
               </tr>
@@ -65,7 +82,7 @@ export default async function ReservationsPage() {
               {reservations.map(r => {
                 const paid = r.payments.reduce((sum, p) => sum + p.amount, 0);
                 const remaining = r.totalCost - paid;
-                
+
                 return (
                   <tr key={r.id} className="hover:bg-[var(--color-bg-input)]/50 transition-colors">
                     <td className="px-6 py-4 font-bold text-[#d4a853]">{r.id.slice(-6)}</td>
@@ -73,20 +90,44 @@ export default async function ReservationsPage() {
                     <td className="px-6 py-4">{r.chalet.name}</td>
                     <td className="px-6 py-4">{formatDate(r.checkIn)}</td>
                     <td className="px-6 py-4">{formatDate(r.checkOut)}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="bg-[var(--color-bg-input)] px-2 py-0.5 rounded font-bold text-[#d4a853]">{r.nights}</span>
+                    </td>
                     <td className="px-6 py-4 font-bold">{formatCur(r.totalCost)}</td>
                     <td className="px-6 py-4">
-                      <span className={remaining > 0 ? "text-red-400" : "text-emerald-500"}>
-                        {formatCur(paid)}
-                      </span>
-                      {remaining > 0 && <div className="text-xs text-[#8b92a5] mt-1">متبقي: {formatCur(remaining)}</div>}
+                      <div className="space-y-1">
+                        <div className="flex justify-between gap-3">
+                          <span className="text-xs text-[#8b92a5]">مدفوع:</span>
+                          <span className={`text-xs font-bold ${paid >= r.totalCost ? 'text-emerald-500' : 'text-white'}`}>
+                            {formatCur(paid)}
+                          </span>
+                        </div>
+                        {remaining > 0.01 && (
+                          <div className="flex justify-between gap-3">
+                            <span className="text-xs text-[#8b92a5]">متبقي:</span>
+                            <span className="text-xs font-bold text-red-400">{formatCur(remaining)}</span>
+                          </div>
+                        )}
+                        {remaining <= 0.01 && r.status !== 'ملغي' && (
+                          <div className="text-xs text-emerald-500 font-bold">✓ مسدّد بالكامل</div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(r.status)}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-[#d4a853] transition-colors" title="تفاصيل">
+                        <button
+                          className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-[#d4a853] transition-colors"
+                          title="تفاصيل"
+                        >
                           <Eye size={16} />
                         </button>
-                        <ReservationActionButtons id={r.id} status={r.status} />
+                        <ReservationActionButtons
+                          id={r.id}
+                          status={r.status}
+                          totalCost={r.totalCost}
+                          paid={paid}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -95,7 +136,7 @@ export default async function ReservationsPage() {
 
               {reservations.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center text-[#8b92a5]">
+                  <td colSpan={10} className="px-6 py-12 text-center text-[#8b92a5]">
                     <div className="text-4xl mb-4">📋</div>
                     <h4 className="text-lg font-bold text-white mb-2">لا توجد حجوزات</h4>
                     <p>انقر على "إضافة حجز" للبدء</p>
