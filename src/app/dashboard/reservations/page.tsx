@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { Plus, CalendarDays, Eye, CheckCircle, XCircle, LogOut } from "lucide-react";
+import { CalendarDays, Eye } from "lucide-react";
 import AddReservationForm from "@/components/AddReservationForm";
+import ReservationActionButtons from "@/components/ReservationActionButtons";
 
 export const dynamic = 'force-dynamic';
 
@@ -85,21 +86,7 @@ export default async function ReservationsPage() {
                         <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-[#d4a853] transition-colors" title="تفاصيل">
                           <Eye size={16} />
                         </button>
-                        {r.status === 'معلق' && (
-                          <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-emerald-500 transition-colors" title="تأكيد">
-                            <CheckCircle size={16} />
-                          </button>
-                        )}
-                        {r.status === 'مؤكد' && (
-                          <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-blue-500 transition-colors" title="تسجيل خروج">
-                            <LogOut size={16} />
-                          </button>
-                        )}
-                        {(r.status !== 'مكتمل' && r.status !== 'ملغي') && (
-                          <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-red-500 transition-colors" title="إلغاء">
-                            <XCircle size={16} />
-                          </button>
-                        )}
+                        <ReservationActionButtons id={r.id} status={r.status} />
                       </div>
                     </td>
                   </tr>
@@ -111,7 +98,7 @@ export default async function ReservationsPage() {
                   <td colSpan={9} className="px-6 py-12 text-center text-[#8b92a5]">
                     <div className="text-4xl mb-4">📋</div>
                     <h4 className="text-lg font-bold text-white mb-2">لا توجد حجوزات</h4>
-                    <p>انقر على "حجز جديد" للبدء</p>
+                    <p>انقر على "إضافة حجز" للبدء</p>
                   </td>
                 </tr>
               )}

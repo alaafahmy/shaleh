@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { Plus, Users, Search, Edit, Eye } from "lucide-react";
+import { Users, Search, Eye } from "lucide-react";
 import AddClientForm from "@/components/AddClientForm";
+import EditClientForm from "@/components/EditClientForm";
 
 export const dynamic = 'force-dynamic';
 
 export default async function ClientsPage() {
-  // Fetch clients with the count of their reservations
   const clients = await prisma.client.findMany({
     include: {
       _count: {
@@ -66,9 +66,7 @@ export default async function ClientsPage() {
                   <td className="px-6 py-4 max-w-[150px] truncate text-[#8b92a5]">{c.notes || '—'}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-[#d4a853] transition-colors" title="تعديل">
-                        <Edit size={16} />
-                      </button>
+                      <EditClientForm client={c} />
                       <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-blue-500 transition-colors" title="عرض الحجوزات">
                         <Eye size={16} />
                       </button>

@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { Plus, Shield, UserCog, UserX } from "lucide-react";
+import { Shield, UserCog } from "lucide-react";
+import AddUserForm from "@/components/AddUserForm";
+import EditUserForm from "@/components/EditUserForm";
+import ToggleUserStatusButton from "@/components/ToggleUserStatusButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +17,7 @@ export default async function UsersPage() {
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
           <span className="bg-purple-500/20 text-purple-500 p-2 rounded-lg"><UserCog size={24} /></span> إدارة المستخدمين والصلاحيات
         </h2>
-        <button className="bg-gradient-to-r from-[#d4a853] to-[#b18532] text-[#06080d] px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <Plus size={18} /> إضافة مستخدم
-        </button>
+        <AddUserForm />
       </div>
 
       <div className="glass-panel overflow-hidden">
@@ -52,16 +53,22 @@ export default async function UsersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-[#d4a853] transition-colors" title="تعديل الصلاحيات">
-                        <Shield size={16} />
-                      </button>
-                      <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-red-500 transition-colors" title={u.active ? "إيقاف" : "تفعيل"}>
-                        <UserX size={16} />
-                      </button>
+                      <EditUserForm user={{ id: u.id, name: u.name, role: u.role }} />
+                      <ToggleUserStatusButton id={u.id} active={u.active} />
                     </div>
                   </td>
                 </tr>
               ))}
+
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-[#8b92a5]">
+                    <div className="text-4xl mb-4">👤</div>
+                    <h4 className="text-lg font-bold text-white mb-2">لا يوجد مستخدمون</h4>
+                    <p>انقر على "إضافة مستخدم" للبدء</p>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

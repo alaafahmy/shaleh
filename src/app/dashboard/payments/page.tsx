@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { Plus, Receipt, FileText } from "lucide-react";
+import { Receipt, FileText } from "lucide-react";
+import AddPaymentForm from "@/components/AddPaymentForm";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,25 @@ export default async function PaymentsPage() {
     },
     orderBy: { date: 'desc' }
   });
+
+  // Fetch reservations for the "add payment" form
+  const reservations = await prisma.reservation.findMany({
+    where: { status: { in: ['معلق', 'مؤكد'] } },
+    include: {
+      client: true,
+      chalet: true,
+      payments: true,
+    },
+  });
+
+  // Build list with paid amount calculated
+  const reservationOptions = reservations.map(r => ({
+    id: r.id,
+    client: { name: r.client.name },
+    chalet: { name: r.chalet.name },
+    totalCost: r.totalCost,
+    paid: r.payments.reduce((s, p) => s + p.amount, 0),
+  }));
 
   const formatCur = (num: number) => new Intl.NumberFormat('ar-SA').format(num) + ' ر.س';
   const formatDate = (date: Date) => date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -33,9 +53,7 @@ export default async function PaymentsPage() {
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
           <span className="bg-emerald-500/20 text-emerald-500 p-2 rounded-lg"><Receipt size={24} /></span> المدفوعات (سندات القبض)
         </h2>
-        <button className="bg-gradient-to-r from-[#d4a853] to-[#b18532] text-[#06080d] px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <Plus size={18} /> سند قبض جديد
-        </button>
+        <AddPaymentForm reservations={reservationOptions} />
       </div>
 
       <div className="glass-panel overflow-hidden">
@@ -46,6 +64,7 @@ export default async function PaymentsPage() {
                 <th className="px-6 py-4 font-bold">رقم السند</th>
                 <th className="px-6 py-4 font-bold">رقم الحجز</th>
                 <th className="px-6 py-4 font-bold">العميل</th>
+                <th className="px-6 py-4 font-bold">الشاليه</th>
                 <th className="px-6 py-4 font-bold">المبلغ</th>
                 <th className="px-6 py-4 font-bold">طريقة الدفع</th>
                 <th className="px-6 py-4 font-bold">التاريخ</th>
@@ -59,6 +78,7 @@ export default async function PaymentsPage() {
                   <td className="px-6 py-4 font-bold text-[#d4a853]">{p.id.slice(-6)}</td>
                   <td className="px-6 py-4 text-[#8b92a5]">{p.reservationId.slice(-6)}</td>
                   <td className="px-6 py-4 font-bold">{p.reservation.client.name}</td>
+                  <td className="px-6 py-4">{p.reservation.chalet.name}</td>
                   <td className="px-6 py-4 font-bold text-emerald-500">{formatCur(p.amount)}</td>
                   <td className="px-6 py-4">{getMethodBadge(p.method)}</td>
                   <td className="px-6 py-4">{formatDate(p.date)}</td>
@@ -73,7 +93,7 @@ export default async function PaymentsPage() {
               
               {payments.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-[#8b92a5]">
+                  <td colSpan={9} className="px-6 py-12 text-center text-[#8b92a5]">
                     <div className="text-4xl mb-4">💰</div>
                     <h4 className="text-lg font-bold text-white mb-2">لا توجد مدفوعات</h4>
                     <p>المدفوعات المسجلة ستظهر هنا</p>

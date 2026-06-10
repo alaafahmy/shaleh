@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { Plus, Home, Edit, Trash2 } from "lucide-react";
+import { Home } from "lucide-react";
 import AddChaletForm from "@/components/AddChaletForm";
+import EditChaletForm from "@/components/EditChaletForm";
+import DeleteChaletButton from "@/components/DeleteChaletButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +25,15 @@ export default async function ChaletsPage() {
   };
 
   const getTypeBadge = (type: string) => {
-    if (type === 'VIP') return 'bg-[#d4a853]/20 text-[#d4a853] border-[#d4a853]/30';
-    if (type === 'كبير') return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
+    if (type.includes('VIP') || type.includes('VVIP')) return 'bg-[#d4a853]/20 text-[#d4a853] border-[#d4a853]/30';
+    if (type.includes('كبير')) return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
     return 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30';
+  };
+
+  const getChaletEmoji = (type: string) => {
+    if (type.includes('VIP') || type.includes('VVIP')) return '👑';
+    if (type.includes('كبير')) return '🏠';
+    return '🏡';
   };
 
   const formatCur = (num: number) => new Intl.NumberFormat('ar-SA').format(num) + ' ر.س';
@@ -37,22 +45,6 @@ export default async function ChaletsPage() {
           <span className="bg-[#d4a853]/20 text-[#d4a853] p-2 rounded-lg"><Home size={24} /></span> إدارة الشاليهات
         </h2>
         <AddChaletForm />
-      </div>
-
-      {/* Filters (UI only for now) */}
-      <div className="flex gap-4">
-        <select className="glass-input px-4 py-2 text-sm appearance-none pr-8">
-          <option value="">النوع: الكل</option>
-          <option value="صغير">صغير</option>
-          <option value="كبير">كبير</option>
-          <option value="VIP">VIP</option>
-        </select>
-        <select className="glass-input px-4 py-2 text-sm appearance-none pr-8">
-          <option value="">الحالة: الكل</option>
-          <option value="متاح">متاح</option>
-          <option value="محجوز">محجوز</option>
-          <option value="تحت الصيانة">تحت الصيانة</option>
-        </select>
       </div>
 
       {/* Grid */}
@@ -67,7 +59,7 @@ export default async function ChaletsPage() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4 pl-8">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center border ${getTypeBadge(c.type)}`}>
-                  <span className="text-2xl">{c.type === 'VIP' ? '👑' : c.type === 'كبير' ? '🏠' : '🏡'}</span>
+                  <span className="text-2xl">{getChaletEmoji(c.type)}</span>
                 </div>
                 {getStatusBadge(c.status)}
               </div>
@@ -89,13 +81,9 @@ export default async function ChaletsPage() {
               </div>
             </div>
 
-            <div className="mt-auto border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]/30 p-4 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-[#d4a853] transition-colors" title="تعديل">
-                <Edit size={16} />
-              </button>
-              <button className="p-2 bg-[var(--color-bg-input)] rounded-md text-[#cacedb] hover:text-red-500 transition-colors" title="حذف">
-                <Trash2 size={16} />
-              </button>
+            <div className="mt-auto border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]/30 p-4 flex justify-end gap-2">
+              <EditChaletForm chalet={c} />
+              <DeleteChaletButton id={c.id} name={c.name} />
             </div>
           </div>
         ))}
