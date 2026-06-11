@@ -43,9 +43,9 @@ export async function addClient(formData: FormData) {
   if (!vNat.valid) return { error: vNat.message };
 
   try {
-    const ref = await generateRefNumber('CLI', prisma);
+    const ref = await generateRefNumber('CLT', prisma);
     const client = await prisma.client.create({
-      data: { name, phone, nationalId, notes, is_archived: false, ref_number: ref, created_by: user.id },
+      data: { name, phone, nationalId: nationalId || null, notes: notes || null, is_archived: false, ref_number: ref, created_by: user.id },
     });
     await logAction({ userId: user.id, action: "إنشاء عميل", table: "Client", recordId: client.id, newValue: client });
     
