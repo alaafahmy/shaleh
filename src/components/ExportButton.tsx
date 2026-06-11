@@ -46,29 +46,40 @@ export default function ExportButton({ type, label, chalets = [] }: ExportButton
     }
   }
 
-  async function handleExport(format: "xlsx" | "pdf") {
-    setLoading(format);
-    try {
-      const params = new URLSearchParams({ type, format });
-      if (startDate) params.set("startDate", startDate);
-      if (endDate) params.set("endDate", endDate);
-      if (chaletId) params.set("chaletId", chaletId);
+  function handleExport(format: "xlsx" | "pdf") {
+    const params = new URLSearchParams({ type, format });
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    if (chaletId) params.set("chaletId", chaletId);
 
-      const url = `/api/export?${params.toString()}`;
+    const url = `/api/export?${params.toString()}`;
 
-      if (format === "pdf") {
-        window.open(url, "_blank");
-      } else {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("فشل التصدير");
-        const blob = await res.blob();
-        const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = downloadUrl;
-        a.download = `${type}_${new Date().toLocaleDateString("en-CA")}.xlsx`;
-        a.click();
-        URL.revokeObjectURL(downloadUrl);
+    if (format === "pdf") {
+      // فتح النافذة فوراً وبشكل متزامن لتخطي حظر النوافذ المنبثقة في الايفون
+      const newWin = window.open(url, "_blank");
+      if (!newWin) {
+        // إذا كان المتصفح (مثل سفاري في الايفون) يمنع النوافذ المنبثقة تماماً، ننتقل بالصفحة الحالية
+        window.location.href = url;
       }
+      setOpen(false);
+      return;
+    }
+
+    downloadXlsx(url);
+  }
+
+  async function downloadXlsx(url: string) {
+    setLoading("xlsx");
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("فشل التصدير");
+      const blob = await res.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `${type}_${new Date().toLocaleDateString("en-CA")}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(downloadUrl);
       setOpen(false);
     } catch (e) {
       alert("فشل التصدير، تحقق من الاتصال");
