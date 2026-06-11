@@ -14,6 +14,7 @@ export default async function ClientsPage() {
   const canViewCreator = ['admin', 'reservation_manager', 'accountant', 'receptionist'].includes(user.role);
 
   const clients = await prisma.client.findMany({
+    where: { is_archived: false },
     include: {
       _count: {
         select: { reservations: true }
