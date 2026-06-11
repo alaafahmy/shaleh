@@ -158,7 +158,8 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
                       }
                     }}
                     required 
-                    className={`w-full bg-[var(--color-bg-input)] border ${dateError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853] [color-scheme:dark]`} 
+                    dir="ltr"
+                    className={`w-full bg-[var(--color-bg-input)] border ${dateError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white text-right focus:outline-none focus:border-[#d4a853] [color-scheme:dark]`} 
                   />
                 </div>
                 <div>
@@ -177,7 +178,8 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
                       }
                     }}
                     required 
-                    className={`w-full bg-[var(--color-bg-input)] border ${dateError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853] [color-scheme:dark]`} 
+                    dir="ltr"
+                    className={`w-full bg-[var(--color-bg-input)] border ${dateError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white text-right focus:outline-none focus:border-[#d4a853] [color-scheme:dark]`} 
                   />
                 </div>
               </div>
