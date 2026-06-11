@@ -14,7 +14,7 @@ export default function AddUserForm() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("admin");
+  const [role, setRole] = useState("reservation_manager");
 
   // Errors State
   const [nameError, setNameError] = useState("");
@@ -69,7 +69,7 @@ export default function AddUserForm() {
     if (res.error) {
       setError(res.error);
     } else {
-      setName(""); setUsername(""); setPassword(""); setRole("admin");
+      setName(""); setUsername(""); setPassword(""); setRole("reservation_manager");
       setIsOpen(false);
     }
   }
@@ -172,7 +172,6 @@ export default function AddUserForm() {
                   required
                   className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
                 >
-                  <option value="admin">مدير النظام</option>
                   <option value="reservation_manager">مدير الحجوزات</option>
                   <option value="accountant">محاسب</option>
                   <option value="receptionist">موظف استقبال</option>

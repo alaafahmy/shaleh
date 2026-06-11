@@ -105,9 +105,10 @@ export default function EditUserForm({ user }: { user: User }) {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                  disabled={user.role === 'admin'}
+                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853] disabled:opacity-50"
                 >
-                  <option value="admin">مدير النظام</option>
+                  {user.role === 'admin' && <option value="admin">مدير النظام</option>}
                   <option value="reservation_manager">مدير الحجوزات</option>
                   <option value="accountant">محاسب</option>
                   <option value="receptionist">موظف استقبال</option>

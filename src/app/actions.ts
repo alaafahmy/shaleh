@@ -610,6 +610,13 @@ export async function updateUser(id: string, formData: FormData) {
   const vName = validateName(name);
   if (!vName.valid) return { error: vName.message };
 
+  if (role === 'admin') {
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (targetUser?.role !== 'admin') {
+      return { error: "لا يمكن تحويل مستخدم عادي إلى مدير عام" };
+    }
+  }
+
   const roleMap: Record<string, string> = {
     admin: "مدير النظام",
     reservation_manager: "مدير الحجوزات",
