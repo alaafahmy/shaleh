@@ -70,8 +70,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass-panel w-full max-w-md p-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center w-full my-8">
+        <div className="glass-panel w-full max-w-md p-8 relative overflow-hidden">
         {/* Glow effects */}
         <div className="absolute top-[-50px] left-[-50px] w-[150px] h-[150px] bg-[#d4a853] rounded-full blur-[80px] opacity-20 pointer-events-none" />
         <div className="absolute bottom-[-50px] right-[-50px] w-[150px] h-[150px] bg-[#3b82f6] rounded-full blur-[80px] opacity-10 pointer-events-none" />
@@ -178,9 +179,10 @@ export default function LoginPage() {
           </p>
         </form>
       </div>
+      </div>
 
       {/* Footer */}
-      <div className="absolute bottom-4 text-center text-[10px] text-white/30 tracking-widest uppercase animate-fade-in">
+      <div className="shrink-0 pb-4 pt-8 text-center text-[10px] text-white/30 tracking-widest uppercase animate-fade-in relative z-10 w-full">
         صنع بواسطة Alaa Soft
       </div>
     </div>
