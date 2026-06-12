@@ -56,7 +56,7 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
     <>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-dark)] text-[var(--color-ui-bg-base)] p-4 rounded-full shadow-[0_0_20px_var(--color-brand-glow)] hover:scale-105 transition-transform"
+        className="md:hidden hide-print fixed bottom-6 right-6 z-50 bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--color-brand-dark)] text-[var(--color-ui-bg-base)] p-4 rounded-full shadow-[0_0_20px_var(--color-brand-glow)] hover:scale-105 transition-transform"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
