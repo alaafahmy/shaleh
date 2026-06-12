@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import * as XLSX from "xlsx";
 
-type ExportType = "reservations" | "payments" | "expenses" | "profits" | "maintenance" | "clients";
+type ExportType = "reservations" | "payments" | "expenses" | "profits" | "maintenance" | "clients" | "reports";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -174,6 +174,55 @@ export async function GET(req: NextRequest) {
         break;
       }
 
+      case "reports": {
+        sheetName = "التقارير_الشاملة";
+        fileName = "reports";
+        const [chalets, revenues, expens, reservations] = await Promise.all([
+          prisma.chalet.findMany({ select: { id: true, name: true, type: true } }),
+          prisma.revenue.findMany({
+            where: { revenue_date: { gte: start, lte: end } },
+            select: { amount: true, chalet_id: true }
+          }),
+          prisma.expense.findMany({
+            where: { date: { gte: start, lte: end } },
+            select: { amount: true, chaletId: true }
+          }),
+          prisma.reservation.findMany({
+            where: { status: { in: ['مؤكد', 'مكتمل'] }, checkIn: { gte: start, lte: end } },
+            select: { chaletId: true }
+          })
+        ]);
+
+        const chaletStats = chalets.map(chalet => {
+          const revs = revenues.filter(r => r.chalet_id === chalet.id).reduce((s, r) => s + r.amount, 0);
+          const exps = expens.filter(e => e.chaletId === chalet.id).reduce((s, e) => s + e.amount, 0);
+          const resCount = reservations.filter(r => r.chaletId === chalet.id).length;
+          return { name: chalet.name, type: chalet.type, resCount, revs, exps, net: revs - exps };
+        }).sort((a, b) => b.net - a.net);
+
+        const totalRevs = revenues.reduce((s, r) => s + r.amount, 0);
+        const totalExps = expens.reduce((s, e) => s + e.amount, 0);
+
+        rows = chaletStats.map(c => ({
+          "اسم الشاليه": c.name,
+          "النوع": c.type,
+          "عدد الحجوزات": c.resCount,
+          "الإيرادات (ر.س)": c.revs,
+          "المصروفات (ر.س)": c.exps,
+          "الصافي (ر.س)": c.net
+        }));
+        
+        rows.push({
+          "اسم الشاليه": "الإجمالي",
+          "النوع": "—",
+          "عدد الحجوزات": reservations.length,
+          "الإيرادات (ر.س)": totalRevs,
+          "المصروفات (ر.س)": totalExps,
+          "الصافي (ر.س)": totalRevs - totalExps
+        });
+        break;
+      }
+
       default:
         return NextResponse.json({ error: "نوع التقرير غير صالح" }, { status: 400 });
     }
@@ -195,7 +244,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(buf, {
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "Content-Disposition": `attachment; filename="${fileName}_${new Date().toLocaleDateString("en-CA")}.xlsx"`,
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(sheetName + "_" + new Date().toLocaleDateString("en-CA") + ".xlsx")}`,
         },
       });
     }
@@ -218,7 +267,11 @@ export async function GET(req: NextRequest) {
   td { padding: 7px 12px; border-bottom: 1px solid #eee; }
   tr:nth-child(even) { background: #f8f8f8; }
   .footer { text-align: center; margin-top: 20px; font-size: 11px; color: #999; }
-  @media print { .no-print { display: none !important; } }
+  @media print {
+    .no-print { display: none !important; }
+    @page { margin: 0; }
+    body { margin: 1.5cm; }
+  }
 </style>
 </head>
 <body>

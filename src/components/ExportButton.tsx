@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, FileSpreadsheet, FileText, ChevronDown, Calendar, X } from "lucide-react";
 
-type ExportType = "reservations" | "payments" | "expenses" | "profits" | "maintenance" | "clients";
+type ExportType = "reservations" | "payments" | "expenses" | "profits" | "maintenance" | "clients" | "reports";
 
 interface ExportButtonProps {
   type: ExportType;
@@ -16,6 +16,7 @@ const typeLabels: Record<ExportType, string> = {
   payments: "المدفوعات",
   expenses: "المصروفات",
   profits: "الأرباح",
+  reports: "التقارير",
   maintenance: "الصيانة",
   clients: "العملاء",
 };
@@ -77,7 +78,7 @@ export default function ExportButton({ type, label, chalets = [] }: ExportButton
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = downloadUrl;
-      a.download = `${type}_${new Date().toLocaleDateString("en-CA")}.xlsx`;
+      a.download = `${typeLabels[type]}_${new Date().toLocaleDateString("en-CA")}.xlsx`;
       a.click();
       URL.revokeObjectURL(downloadUrl);
       setOpen(false);

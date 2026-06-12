@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Calendar as CalendarIcon, Printer } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar as CalendarIcon } from "lucide-react";
+import ExportButton from "@/components/ExportButton";
 
 type Chalet = { id: string; name: string; type: string };
 type Revenue = { amount: number; revenue_date: Date; chalet_id: string | null };
@@ -62,10 +63,6 @@ export default function ReportsClient({
     return { ...chalet, revs, exps, net: revs - exps, resCount };
   }).sort((a, b) => b.net - a.net);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 hide-print">
@@ -89,10 +86,7 @@ export default function ReportsClient({
             </button>
           ))}
         </div>
-        <button onClick={handlePrint} className="btn-secondary px-6 py-2.5 flex items-center justify-center gap-2 w-full md:w-auto">
-          <Printer size={18} />
-          <span>تصدير / طباعة PDF</span>
-        </button>
+        <ExportButton type="reports" label="تصدير التقارير" />
       </div>
 
       <div className="print-only mb-8 text-center hidden">
