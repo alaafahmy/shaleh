@@ -34,7 +34,8 @@ export default function Header({ userName = "مستخدم", userRole = "user" }:
     "/dashboard/payments": "المدفوعات",
     "/dashboard/revenue": "الإيرادات",
     "/dashboard/expenses": "المصروفات",
-    "/dashboard/profits": "التقارير المالية",
+    "/dashboard/profits": "الأرباح",
+    "/dashboard/reports": "التقارير",
     "/dashboard/maintenance": "الصيانة",
     "/dashboard/users": "المستخدمين",
   };
