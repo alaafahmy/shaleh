@@ -95,49 +95,49 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="bg-gradient-to-r from-[#d4a853] to-[#b18532] text-[#06080d] px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity"
+        className="btn-primary px-5 py-2.5 flex items-center gap-2"
       >
         <Plus size={18} /> إضافة حجز جديد
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel p-6 w-full max-w-2xl relative animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="glass-panel p-8 w-full max-w-2xl relative animate-scale-up">
             <button 
               onClick={() => { setIsOpen(false); setError(null); }}
-              className="absolute top-4 left-4 text-[#8b92a5] hover:text-white"
+              className="absolute top-5 left-5 text-[var(--color-ui-text-muted)] hover:text-white transition-colors bg-white/5 p-1.5 rounded-md hover:bg-red-500/20 hover:text-red-400"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
-            <h3 className="text-xl font-bold text-white mb-6">إنشاء حجز جديد</h3>
+            <h3 className="text-2xl font-bold text-white mb-8 tracking-wide">إنشاء حجز جديد</h3>
             
-            {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm font-bold border border-red-500/30">{error}</div>}
+            {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-6 text-sm font-bold">{error}</div>}
 
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm text-[#8b92a5] mb-1">العميل <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-[var(--color-ui-text-secondary)] mb-2">العميل <span className="text-red-500">*</span></label>
                   <select 
                     value={clientId}
                     onChange={(e) => setClientId(e.target.value)}
                     required 
-                    className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                    className="w-full glass-input p-3.5 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a1a1aa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:left_1rem_center] bg-[length:0.65rem_auto]"
                   >
-                    <option value="">اختر العميل...</option>
-                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    <option value="" className="bg-[var(--color-ui-bg-panel)] text-white">اختر العميل...</option>
+                    {clients.map(c => <option key={c.id} value={c.id} className="bg-[var(--color-ui-bg-panel)] text-white">{c.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-[#8b92a5] mb-1">الشاليه <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-[var(--color-ui-text-secondary)] mb-2">الشاليه <span className="text-red-500">*</span></label>
                   <select 
                     value={chaletId}
                     onChange={(e) => handleDateChange(checkIn, checkOut, e.target.value)}
                     required 
-                    className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]"
+                    className="w-full glass-input p-3.5 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a1a1aa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:left_1rem_center] bg-[length:0.65rem_auto]"
                   >
-                    <option value="">اختر الشاليه...</option>
+                    <option value="" className="bg-[var(--color-ui-bg-panel)] text-white">اختر الشاليه...</option>
                     {chalets.map(c => (
-                      <option key={c.id} value={c.id} disabled={c.status === "تحت الصيانة"}>
+                      <option key={c.id} value={c.id} disabled={c.status === "تحت الصيانة"} className="bg-[var(--color-ui-bg-panel)] text-white">
                         {c.name} ({c.pricePerNight} ر.س/ليلة) {c.status === "تحت الصيانة" ? "- 🛠️ تحت الصيانة" : ""}
                       </option>
                     ))}
@@ -145,9 +145,9 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm text-[#8b92a5] mb-1">تاريخ الدخول <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-[var(--color-ui-text-secondary)] mb-2">تاريخ الدخول <span className="text-red-500">*</span></label>
                   <input 
                     type="date" 
                     value={checkIn}
@@ -163,11 +163,11 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
                     }}
                     required 
                     dir="ltr"
-                    className={`w-full bg-[var(--color-bg-input)] border ${dateError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white text-right focus:outline-none focus:border-[#d4a853] [color-scheme:dark]`} 
+                    className={`w-full glass-input p-3.5 text-right [color-scheme:dark] ${dateError ? '!border-red-500 !shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' : ''}`} 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-[#8b92a5] mb-1">تاريخ الخروج <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-[var(--color-ui-text-secondary)] mb-2">تاريخ الخروج <span className="text-red-500">*</span></label>
                   <input 
                     type="date" 
                     value={checkOut}
@@ -183,14 +183,14 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
                     }}
                     required 
                     dir="ltr"
-                    className={`w-full bg-[var(--color-bg-input)] border ${dateError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white text-right focus:outline-none focus:border-[#d4a853] [color-scheme:dark]`} 
+                    className={`w-full glass-input p-3.5 text-right [color-scheme:dark] ${dateError ? '!border-red-500 !shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' : ''}`} 
                   />
                 </div>
               </div>
               {dateError && <p className="text-red-400 text-xs mt-1">{dateError}</p>}
 
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">إجمالي المبلغ المطلوب (ر.س) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-[var(--color-ui-text-secondary)] mb-2">إجمالي المبلغ المطلوب (ر.س) <span className="text-red-500">*</span></label>
                 <input 
                   type="number" 
                   value={totalPrice}
@@ -204,37 +204,45 @@ export default function AddReservationForm({ clients, chalets }: { clients: Clie
                   }}
                   required 
                   min="1"
-                  className={`w-full bg-[var(--color-bg-input)] border ${priceError ? 'border-red-500' : 'border-[var(--color-border-subtle)]'} rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]`} 
+                  className={`w-full glass-input p-3.5 ${priceError ? '!border-red-500 !shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' : ''}`} 
                   placeholder="مثال: 3000" 
                 />
                 {priceError && <p className="text-red-400 text-xs mt-1">{priceError}</p>}
               </div>
 
               <div>
-                <label className="block text-sm text-[#8b92a5] mb-1">ملاحظات الحجز</label>
+                <label className="block text-sm font-medium text-[var(--color-ui-text-secondary)] mb-2">ملاحظات الحجز</label>
                 <textarea 
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2} 
-                  className="w-full bg-[var(--color-bg-input)] border border-[var(--color-border-subtle)] rounded-lg p-3 text-white focus:outline-none focus:border-[#d4a853]" 
+                  className="w-full glass-input p-3.5 resize-none" 
                   placeholder="طلبات خاصة..."
                 ></textarea>
               </div>
 
-              <div className="pt-4 flex gap-3">
+              <div className="pt-6 flex gap-4">
                 <button 
                   type="button" 
                   onClick={() => { setIsOpen(false); setError(null); }}
-                  className="flex-1 bg-[var(--color-bg-input)] text-white p-3 rounded-lg hover:bg-[var(--color-border-subtle)] transition-colors"
+                  className="flex-1 bg-[var(--color-ui-bg-input)] text-white p-3.5 rounded-xl hover:bg-[var(--color-ui-bg-panel-hover)] border border-[var(--color-ui-border-subtle)] transition-all duration-300 font-medium"
                 >
                   إلغاء
                 </button>
                 <button 
                   type="submit" 
                   disabled={pending}
-                  className="flex-1 bg-[#d4a853] text-[#06080d] font-bold p-3 rounded-lg hover:bg-[#b18532] transition-colors disabled:opacity-50"
+                  className="flex-1 btn-primary p-3.5 disabled:opacity-50 flex items-center justify-center"
                 >
-                  {pending ? "جاري التحقق..." : "تأكيد الحجز"}
+                  {pending ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      جاري التحقق...
+                    </span>
+                  ) : "تأكيد الحجز"}
                 </button>
               </div>
             </form>
