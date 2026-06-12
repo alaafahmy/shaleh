@@ -340,6 +340,14 @@ export async function updateReservationStatus(id: string, status: string) {
     }
 
     if (status === "مؤكد") {
+      const chalet = await prisma.chalet.findUnique({
+        where: { id: reservation.chaletId },
+        select: { status: true }
+      });
+      if (chalet?.status === "تحت الصيانة") {
+        return { error: "لا يمكن تأكيد الحجز لأن الشاليه حالياً تحت الصيانة." };
+      }
+
       const conflict = await prisma.reservation.findFirst({
         where: {
           chaletId: reservation.chaletId,
@@ -722,6 +730,21 @@ export async function addMaintenance(formData: FormData) {
   if (!chaletId || !type) return { error: "جميع الحقول المطلوبة يجب تعبئتها" };
 
   try {
+    // فحص إذا كان الشاليه محجوز حالياً (يوجد عميل فيه الآن)
+    const now = new Date();
+    const activeReservation = await prisma.reservation.findFirst({
+      where: {
+        chaletId,
+        status: "مؤكد",
+        checkIn: { lte: now },
+        checkOut: { gt: now }
+      }
+    });
+
+    if (activeReservation) {
+      return { error: "عذراً! هذا الشاليه مشغول حالياً بحجز نشط، لا يمكن بدء الصيانة فيه." };
+    }
+
     const ref = await generateRefNumber('MNT', prisma);
     const maintenance = await prisma.maintenance.create({
       data: { 
