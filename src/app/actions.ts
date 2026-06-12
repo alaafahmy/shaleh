@@ -732,12 +732,15 @@ export async function addMaintenance(formData: FormData) {
   try {
     // فحص إذا كان الشاليه محجوز حالياً (يوجد عميل فيه الآن)
     const now = new Date();
+    now.setHours(now.getHours() + 3); // KSA timezone adjustment
+    const today = new Date(now.toISOString().split('T')[0]);
+
     const activeReservation = await prisma.reservation.findFirst({
       where: {
         chaletId,
         status: "مؤكد",
-        checkIn: { lte: now },
-        checkOut: { gt: now }
+        checkIn: { lte: today },
+        checkOut: { gt: today }
       }
     });
 
@@ -814,9 +817,16 @@ export async function completeMaintenance(id: string) {
     });
 
     if (!activeM) {
+      const now = new Date();
+      now.setHours(now.getHours() + 3);
+      const today = new Date(now.toISOString().split('T')[0]);
+      const activeRes = await prisma.reservation.findFirst({
+        where: { chaletId: maintenance.chaletId, status: "مؤكد", checkIn: { lte: today }, checkOut: { gt: today } }
+      });
+
       await prisma.chalet.update({
         where: { id: maintenance.chaletId },
-        data: { status: 'متاح' }
+        data: { status: activeRes ? 'محجوز' : 'متاح' }
       });
     }
 
@@ -860,9 +870,16 @@ export async function deleteMaintenance(id: string) {
       });
 
       if (!activeM) {
+        const now = new Date();
+        now.setHours(now.getHours() + 3);
+        const today = new Date(now.toISOString().split('T')[0]);
+        const activeRes = await prisma.reservation.findFirst({
+          where: { chaletId: maintenance.chaletId, status: "مؤكد", checkIn: { lte: today }, checkOut: { gt: today } }
+        });
+
         await prisma.chalet.update({
           where: { id: maintenance.chaletId },
-          data: { status: 'متاح' }
+          data: { status: activeRes ? 'محجوز' : 'متاح' }
         });
       }
     }
